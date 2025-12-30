@@ -39,8 +39,11 @@ static struct irq_chip ti_sci_wkup_irq_chip = {
 static int ti_sci_wkup_irq_domain_map(struct irq_domain *d, unsigned int irq,
 				      irq_hw_number_t hw)
 {
+	// domain has same data as host_data
 	struct ti_sci_wkup_irq_domain *intw = d->host_data;
 
+	// set the irq chip to tisci_wakeup and the irq handler is a level handler
+	// handle_level_irq is provided by the kernel
 	irq_set_chip_and_handler(irq, &ti_sci_wkup_irq_chip, handle_level_irq);
 	irq_set_chip_data(irq, intw);
 	irq_set_noprobe(irq);
@@ -60,12 +63,16 @@ static int ti_sci_wkup_handle_wake_reason(struct ti_sci_wkup_irq_domain *intw)
 	u32 wkup_source;
 	int virq, ret;
 
+	// send tisci req to get the wake reason
 	ret = pmops->lpm_wake_reason(intw->sci, &wkup_source, &timestamp);
 	if (ret)
 		return ret;
 
+	// the wkup_source is the irq of the wakeup source
+	// this gets the linux virtual irq from the hw irq of wkup_source
 	virq = irq_find_mapping(intw->irq_domain, wkup_source);
 	if (virq) {
+		// handle the irq
 		generic_handle_irq(virq);
 		dev_info(intw->dev, "Handled wake reason 0x%x virq %d, timestamp %llu\n",
 			 wkup_source, virq, timestamp);
@@ -79,6 +86,9 @@ static int ti_sci_wkup_handle_wake_reason(struct ti_sci_wkup_irq_domain *intw)
 
 static void ti_sci_wkup_work(struct work_struct *work)
 {
+	// convert work to delayed_work struct
+	// then find where it is assigned to wq_wkup
+	// then finally get back the pointer to the ti_sci_wkup_irq_domain which was made 
 	struct ti_sci_wkup_irq_domain *intw =
 		container_of(to_delayed_work(work),
 			     struct ti_sci_wkup_irq_domain, wq_wkup);
@@ -91,6 +101,7 @@ static int ti_sci_wkup_notifier(struct notifier_block *nb,
 {
 	struct ti_sci_wkup_irq_domain *intw;
 
+	// get the ti_sci_wkup_irq_domain of the given nb
 	intw = container_of(nb, struct ti_sci_wkup_irq_domain, nb);
 
 	/* The notifier runs with timekeeping suspended.*/
@@ -118,6 +129,7 @@ static int ti_sci_wkup_irq_domain_probe(struct platform_device *pdev)
 		return dev_err_probe(dev, PTR_ERR(intw->sci),
 				     "ti,sci read fail\n");
 
+	// create domain tree
 	intw->irq_domain = irq_domain_add_tree(dev_of_node(dev),
 					       &ti_sci_wkup_irq_domain_ops,
 					       intw);
@@ -125,6 +137,7 @@ static int ti_sci_wkup_irq_domain_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	intw->nb.notifier_call = ti_sci_wkup_notifier;
+	// notifier for when CPU enters/leaves LPM
 	cpu_pm_register_notifier(&intw->nb);
 
 	INIT_DELAYED_WORK(&intw->wq_wkup, ti_sci_wkup_work);
