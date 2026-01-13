@@ -21,6 +21,11 @@
 	compatible = "ti,am62l3-evm", "ti,am62l3";
 	model = "Texas Instruments AM62L3 Evaluation Module";
 
+	aliases {
+		serial0 = &uart0;
+		serial2 = &wkup_uart0;
+	};
+
 	chosen {
 		stdout-path = &uart0;
 	};
@@ -313,6 +318,22 @@
 		>;
 	};
 
+	wkup_uart0_pins_default: wkup-uart0-default-pins {
+		pinctrl-single,pins = <
+			AM62LX_IOPAD(0x0000, PIN_INPUT, 0) /* (D13) UART0_RXD */
+			AM62LX_IOPAD(0x0004, PIN_OUTPUT, 0) /* (C13) UART0_TXD */
+			AM62LX_IOPAD(0x0008, PIN_INPUT, 0) /* (D13) UART0_RXD */
+			AM62LX_IOPAD(0x000C, PIN_OUTPUT, 0) /* (C13) UART0_TXD */
+		>;
+	};
+
+//	wkup_uart0_pins_wakeup: wkup-uart0-wakeup-pins {
+//		pinctrl-single,pins = <
+//			//AM62LX_IOPAD(0x0000, PIN_INPUT | PIN_WKUP_EN, 0) /* (D13) UART0_RXD */
+//			AM62LX_IOPAD(0x0004, PIN_OUTPUT, 0) /* (C13) UART0_TXD */
+//		>;
+//	};
+
 };
 
 &sdhci0 {
@@ -334,6 +355,10 @@
 	bootph-all;
 };
 
+&wkup_uart0_interconnect {
+	status = "okay";
+};
+
 &uart0 {
 	pinctrl-0 = <&uart0_pins_default>;
 	pinctrl-1 = <&uart0_pins_wakeup>;
@@ -341,6 +366,15 @@
 	wakeup-source  = <&system_deep_sleep>;
 	status = "okay";
 	bootph-all;
+};
+
+&wkup_uart0 {
+	pinctrl-0 = <&wkup_uart0_pins_default>;
+	//pinctrl-1 = <&wkup_uart0_pins_wakeup>;
+	//pinctrl-names = "default", "wakeup";
+	pinctrl-names = "default";
+	//wakeup-source  = <&system_deep_sleep>;
+	status = "okay";
 };
 
 &usbss0 {
@@ -369,6 +403,3 @@
 	pinctrl-0 = <&usb1_default_pins>;
 };
 
-&wkup_uart0_interconnect {
-	status = "okay";
-};
