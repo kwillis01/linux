@@ -31,7 +31,6 @@
 #include <linux/sys_soc.h>
 #include <linux/timekeeping.h>
 #include <linux/iopoll.h>
-
 #include <linux/platform_data/ti-sysc.h>
 
 #include <dt-bindings/bus/ti-sysc.h>
@@ -174,6 +173,8 @@ static int sysc_reset(struct sysc *ddata);
 
 static void sysc_write(struct sysc *ddata, int offset, u32 value)
 {
+	if (offset == ddata->offsets[SYSC_SYSCONFIG])
+		dev_info(ddata->dev, "DEBUG: sysc_write: sysconfig reg write value: %d\n", value);
 	if (ddata->cfg.quirks & SYSC_QUIRK_16BIT) {
 		writew_relaxed(value & 0xffff, ddata->module_va + offset);
 
@@ -945,6 +946,7 @@ static int sysc_show_reg(struct sysc *ddata,
 {
 	if (ddata->offsets[reg] < 0)
 		return sprintf(bufp, ":NA");
+	pr_info("DEBUG: sysc_show_reg: %x\n", ddata->offsets[reg]);
 
 	return sprintf(bufp, ":%x", ddata->offsets[reg]);
 }
@@ -973,7 +975,7 @@ static void sysc_show_registers(struct sysc *ddata)
 	bufp += sysc_show_rev(bufp, ddata);
 	bufp += sysc_show_name(bufp, ddata);
 
-	dev_dbg(ddata->dev, "%llx:%x%s\n",
+	dev_info(ddata->dev, "DEBUG: %llx:%x%s\n",
 		ddata->module_pa, ddata->module_size,
 		buf);
 }
@@ -990,6 +992,7 @@ static void sysc_write_sysconfig(struct sysc *ddata, u32 value)
 
 	sysc_write(ddata, ddata->offsets[SYSC_SYSCONFIG], value);
 
+	dev_info(ddata->dev, "DEBUG: sysc_write_sysconfig: value: %d, caller: %pS\n", value, __builtin_return_address(0));
 	if (ddata->module_lock_quirk)
 		ddata->module_lock_quirk(ddata);
 }
@@ -1064,7 +1067,7 @@ static int sysc_enable_module(struct device *dev)
 		/* Clear WAKEUP */
 		if (regbits->enwkup_shift >= 0 &&
 		    ddata->cfg.sysc_val & BIT(regbits->enwkup_shift))
-			reg &= ~BIT(regbits->enwkup_shift);
+			reg |= BIT(regbits->enwkup_shift);
 	} else {
 		best_mode = fls(ddata->cfg.sidlemodes) - 1;
 		if (best_mode > SYSC_IDLE_MASK) {
@@ -1080,6 +1083,7 @@ static int sysc_enable_module(struct device *dev)
 
 	reg &= ~(SYSC_IDLE_MASK << regbits->sidle_shift);
 	reg |= best_mode << regbits->sidle_shift;
+	reg |= 0x10;
 	sysc_write_sysconfig(ddata, reg);
 
 set_midle:
@@ -1427,7 +1431,7 @@ static int __maybe_unused sysc_noirq_suspend(struct device *dev)
 		return 0;
 
 	ddata->needs_resume = 1;
-
+	
 	return sysc_runtime_suspend(dev);
 }
 
@@ -2147,6 +2151,7 @@ static int sysc_reset(struct sysc *ddata)
 		 * srst_udelay value is needed but not configured.
 		 */
 		sysc_val = sysc_read_sysconfig(ddata);
+		dev_info(ddata->dev, "DEBUG: sysc_reset: sysconfig reg write value: %d\n", sysc_val);
 	}
 
 	if (ddata->post_reset_quirk)
@@ -2250,6 +2255,7 @@ static int sysc_init_sysc_mask(struct sysc *ddata)
 		return 0;
 
 	ddata->cfg.sysc_val = val & ddata->cap->sysc_mask;
+	dev_info(ddata->dev, "DEBUG: sysc_init_syss_mask: val: %d\n", ddata->cfg.sysc_val);
 
 	return 0;
 }
@@ -2315,6 +2321,7 @@ static int sysc_init_syss_mask(struct sysc *ddata)
 		ddata->cfg.quirks |= SYSC_QUIRK_RESET_STATUS;
 
 	ddata->cfg.syss_mask = val;
+	dev_info(ddata->dev, "DEBUG: sysc_init_syss_mask: val: %d\n", val);
 
 	return 0;
 }
@@ -3147,6 +3154,7 @@ static int sysc_probe(struct platform_device *pdev)
 	struct sysc *ddata;
 	int error;
 
+
 	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
 	if (!ddata)
 		return -ENOMEM;
@@ -3168,23 +3176,20 @@ static int sysc_probe(struct platform_device *pdev)
 	error = sysc_init_dts_quirks(ddata);
 	if (error)
 		return error;
-
 	error = sysc_map_and_check_registers(ddata);
 	if (error)
 		return error;
-
 	error = sysc_init_sysc_mask(ddata);
 	if (error)
 		return error;
-
+	dev_info(&pdev->dev, "DEBUG: probe: sysc reg set to: %d\n", sysc_read(ddata, ddata->offsets[SYSC_SYSCONFIG]));
 	error = sysc_init_idlemodes(ddata);
 	if (error)
 		return error;
-
 	error = sysc_init_syss_mask(ddata);
 	if (error)
 		return error;
-
+	dev_info(&pdev->dev, "DEBUG: probe: syss reg set to: %d\n", sysc_read(ddata, ddata->offsets[SYSC_SYSSTATUS]));
 	error = sysc_init_pdata(ddata);
 	if (error)
 		return error;
@@ -3258,6 +3263,8 @@ static int sysc_probe(struct platform_device *pdev)
 	if (ddata->cfg.quirks & SYSC_QUIRK_REINIT_ON_CTX_LOST)
 		sysc_add_restored(ddata);
 
+	dev_info(&pdev->dev, "DEBUG: finish probe: sysc reg set to: %d\n", sysc_read(ddata, ddata->offsets[SYSC_SYSCONFIG]));
+	dev_info(&pdev->dev, "DEBUG: finish probe: syss reg set to: %d\n", sysc_read(ddata, ddata->offsets[SYSC_SYSSTATUS]));
 	return 0;
 
 err:
