@@ -194,12 +194,22 @@ static int __init early_omap8250_setup(struct earlycon_device *device,
 				       const char *options)
 {
 	struct uart_port *port = &device->port;
+	
+	void *sysc_reg = ioremap(0x2B300054, 4);
+        void *syss_reg = ioremap(0x2B300058, 4);
+
+	pr_info("DEBUG: sysc reg before early_omap8250_setup: %d\n", ioread32(sysc_reg));
+        pr_info("DEBUG: syss reg before early_omap8250_setup: %d\n", ioread32(syss_reg));
 
 	if (!(device->port.membase || device->port.iobase))
 		return -ENODEV;
 
 	port->regshift = 2;
 	device->con->write = early_serial8250_write;
+	pr_info("DEBUG: sysc reg after early_omap8250_setup: %d\n", ioread32(sysc_reg));
+        pr_info("DEBUG: syss reg after early_omap8250_setup: %d\n", ioread32(syss_reg));
+	iounmap(sysc_reg);
+	iounmap(syss_reg);
 	return 0;
 }
 

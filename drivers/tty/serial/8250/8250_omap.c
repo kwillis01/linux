@@ -1425,13 +1425,15 @@ static int omap8250_probe(struct platform_device *pdev)
 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
-
+	dev_info(&pdev->dev, "DEBUG: register start: %llu, end: %llu\n", regs->start, regs->end);
 	membase = devm_ioremap(&pdev->dev, regs->start,
 				       resource_size(regs));
 	if (!membase)
 		return -ENODEV;
 
 	memset(&up, 0, sizeof(up));
+	// pretty sure this is what messes it up
+	// DEBUG: need to see if reg can be rewritten
 	up.port.dev = &pdev->dev;
 	up.port.mapbase = regs->start;
 	up.port.membase = membase;
@@ -1591,6 +1593,8 @@ static int omap8250_probe(struct platform_device *pdev)
 	pm_runtime_mark_last_busy(&pdev->dev);
 	pm_runtime_put_autosuspend(&pdev->dev);
 
+	dev_info(&pdev->dev, "DEBUG: probe: sysc reg 2b300054: %d\n", ioread32be(membase + 0x54));
+	dev_info(&pdev->dev, "DEBUG: probe: sysc reg 2b300058: %d\n", ioread32be(membase + 0x58));
 	priv->pinctrl = devm_pinctrl_get(&pdev->dev);
 	if (!IS_ERR_OR_NULL(priv->pinctrl))
 		priv->pinctrl_wakeup = pinctrl_lookup_state(priv->pinctrl, "wakeup");
