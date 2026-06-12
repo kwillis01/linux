@@ -131,7 +131,3 @@
 &dsi0 {
 	status = "okay";
 };
-
-&sii9022 {
-	status = "disabled";
-};

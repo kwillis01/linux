@@ -67,6 +67,7 @@ dtb-$(CONFIG_ARCH_K3) += k3-am62l3-badge.dtb
 
 # Boards with AM62Lx SoCs
 dtb-$(CONFIG_ARCH_K3) += k3-am62l3-evm.dtb
+dtb-$(CONFIG_ARCH_K3) += k3-am62l3-evm-hmi.dtb
 dtb-$(CONFIG_ARCH_K3) += k3-am62l3-evm-dsi-rpi-7inch-panel.dtbo
 dtb-$(CONFIG_ARCH_K3) += k3-am62l3-evm-lpm-wkup-sources.dtbo
 dtb-$(CONFIG_ARCH_K3) += k3-am62l3-evm-m2-cc3351.dtbo
@@ -432,6 +433,8 @@ k3-j784s4-evm-usb0-type-a-dtbs := k3-j784s4-evm.dtb \
 k3-j784s4-evm-usxgmii-exp1-exp2-dtbs := k3-j784s4-evm.dtb \
 	k3-j784s4-evm-usxgmii-exp1-exp2.dtbo
 k3-am62l3-evm-dsi-rpi-7inch-panel-dtbs := k3-am62l3-evm.dtb \
+	k3-am62l3-evm-dsi-rpi-7inch-panel.dtbo
+k3-am62l3-evm-hmi-dsi-rpi-7inch-panel-dtbs := k3-am62l3-evm-hmi.dtb \
 	k3-am62l3-evm-dsi-rpi-7inch-panel.dtbo
 k3-am62l3-evm-nand-dtbs := k3-am62l3-evm.dtb \
 	k3-am62l3-evm-nand.dtbo
