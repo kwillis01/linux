@@ -15,6 +15,7 @@
 
 void irq_pm_handle_wakeup(struct irq_desc *desc)
 {
+	pr_info("DEBUG: irq_pm_handle_wakeup: IRQ %d\n", desc->irq_data.irq);
 	irqd_clear(&desc->irq_data, IRQD_WAKEUP_ARMED);
 	desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
 	desc->depth++;
@@ -72,6 +73,7 @@ static bool suspend_device_irq(struct irq_desc *desc)
 		return false;
 
 	if (irqd_is_wakeup_set(irqd)) {
+		pr_info("DEBUG: IRQ %d is IRQD_WAKEUP_ARMED\n", irqd->irq);
 		irqd_set(irqd, IRQD_WAKEUP_ARMED);
 
 		if ((chipflags & IRQCHIP_ENABLE_WAKEUP_ON_SUSPEND) &&

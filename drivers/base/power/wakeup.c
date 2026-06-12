@@ -921,6 +921,7 @@ void pm_wakeup_clear(unsigned int irq_number)
 
 	raw_spin_unlock_irq(&wakeup_irq_lock);
 
+	pr_info("DEBUG: pm_wakeup_clear: IRQ %d\n", irq_number);
 	if (!irq_number)
 		atomic_set(&pm_abort_suspend, 0);
 }
@@ -937,6 +938,8 @@ void pm_system_irq_wakeup(unsigned int irq_number)
 		wakeup_irq[1] = irq_number;
 	else
 		irq_number = 0;
+
+	pr_info("DEBUG: pm_system_irq_wakeup: wakeup_irq[0] = %d; wakeup_irq[1] = %d\n", wakeup_irq[0], wakeup_irq[1]);
 
 	pm_pr_dbg("Triggering wakeup from IRQ %d\n", irq_number);
 

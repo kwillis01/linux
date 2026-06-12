@@ -483,6 +483,8 @@ static bool irq_can_handle_pm(struct irq_desc *desc)
 	 * If the interrupt is not in progress and is not an armed
 	 * wakeup interrupt, proceed.
 	 */
+	if (irqd->irq == 271)
+		pr_info("DEBUG: irq_can_handle_pm: IRQ %d\n", irqd->irq);
 	if (!irqd_has_set(irqd, IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED))
 		return true;
 
