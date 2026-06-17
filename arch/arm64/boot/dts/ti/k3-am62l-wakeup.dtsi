@@ -94,6 +94,14 @@
 		status = "disabled";
 	};
 
+	intw_ti_sci: intw-ti-sci {
+                compatible = "ti,sci-wkup";
+                interrupt-controller;
+                interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+                #interrupt-cells = <1>;
+       };
+
 	wkup_uart0_interconnect: target-module@2b300050 {
 		compatible = "ti,sysc-omap2", "ti,sysc";
 		reg = <0x00 0x2b300050 0x00 0x4>,
@@ -120,7 +128,7 @@
 		wkup_uart0: serial@0 {
 			compatible = "ti,am64-uart", "ti,am654-uart";
 			reg = <0x00 0x100>;
-			interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts-extended = <&intw_ti_sci 0x02>;
 			clocks = <&scmi_clk 324>;
 			assigned-clocks = <&scmi_clk 324>;
 			clock-names = "fclk";
@@ -131,7 +139,7 @@
 	wkup_rtc0: rtc@2b1f0000 {
 		compatible = "ti,am62l-rtc";
 		reg = <0x00 0x2b1f0000 0x00 0x100>;
-		interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+		interrupts-extended = <&intw_ti_sci 0x80>;
 		clocks = <&scmi_clk 271> , <&scmi_clk 268>;
 		clock-names = "vbus", "osc32k";
 		assigned-clocks = <&scmi_clk 488>;
