@@ -384,10 +384,6 @@ extern int __of_parse_phandle_with_args(const struct device_node *np,
 extern int of_parse_phandle_with_args_map(const struct device_node *np,
 	const char *list_name, const char *stem_name, int index,
 	struct of_phandle_args *out_args);
-extern int of_parse_map_iter(const struct device_node *np,
-	const char *stem_name, int *index,
-	struct of_phandle_args *child_args,
-	struct of_phandle_args *parent_args);
 extern int of_count_phandle_with_args(const struct device_node *np,
 	const char *list_name, const char *cells_name);
 
@@ -786,15 +782,6 @@ static inline int of_parse_phandle_with_args_map(const struct device_node *np,
 						 const char *stem_name,
 						 int index,
 						 struct of_phandle_args *out_args)
-{
-	return -ENOSYS;
-}
-
-static inline int of_parse_map_iter(const struct device_node *np,
-				     const char *stem_name,
-				     int *index,
-				     struct of_phandle_args *child_args,
-				     struct of_phandle_args *parent_args)
 {
 	return -ENOSYS;
 }
