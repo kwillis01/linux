@@ -599,6 +599,20 @@ config TI_SCI_INTA_IRQCHIP
 	  If you wish to use interrupt aggregator irq resources managed by the
 	  TI System Controller, say Y here. Otherwise, say N.
 
+config TI_K3_IPC_IRQCHIP
+	tristate "Texas Instruments K3 AM62L IPC irqchip"
+	depends on ARCH_K3 || COMPILE_TEST
+	select IRQ_DOMAIN
+	help
+	  This enables the irqchip driver support for the IPC interrupt
+	  controller found on the TI K3 AM62L SoC. The driver decodes commands
+	  sent from the firmware through an IPC register. Linux will execute the
+	  action for the command and dispatch a virtual IRQ to the corresponding
+	  consumer. Current commands are for dispatching wake IRQs once the system
+	  resumes from a low power mode.
+
+	  If unsure, say N.
+
 config TI_PRUSS_INTC
 	tristate
 	depends on TI_PRUSS
