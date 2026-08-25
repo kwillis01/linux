@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/interrupt-controller/ti,k3-ipc-irq.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Texas Instruments K3 IPC IRQ Controller
+
+maintainers:
+  - Kendall Willis <k-willis@ti.com>
+
+description: |
+  On the TI K3 SoC AM62L, the IPC mailbox register can be used to send messages
+  from firmware to Linux. This controller decodes the IPC mailbox register and
+  can execute an action such as dispatching a virtual IRQ to a consumer node.
+
+properties:
+  compatible:
+    const: ti,k3-ipc-irq
+
+  reg:
+    maxItems: 1
+    description: CTRL MMR register block containing the IPC registers.
+
+  interrupts:
+    maxItems: 1
+    description: GIC SPI interrupt raised by firmware.
+
+  interrupt-controller: true
+
+  '#interrupt-cells':
+    const: 1
+    description: Single cell encoding the consumer virtual IRQ.
+
+required:
+  - compatible
+  - reg
+  - interrupts
+  - interrupt-controller
+  - '#interrupt-cells'
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+
+    ipc_irqchip: interrupt-controller@9080000 {
+        compatible = "ti,k3-ipc-irq";
+        reg = <0x9080000 0x200>;
+        interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
+        interrupt-controller;
+        #interrupt-cells = <1>;
+    };
+
+    /* UART: wakeup via MAIN IO daisy chain, pin 0x6d */
+    serial@2800000 {
+        reg = <0x2800000 0x100>;
+        interrupts-extended = <&gic500 GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>,
+                              <&ipc_irqchip 0x100006d>;
+        interrupt-names = "irq", "wakeup";
+    };
