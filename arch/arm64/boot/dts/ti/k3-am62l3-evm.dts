@@ -16,6 +16,7 @@
 #include <dt-bindings/thermal/thermal.h>
 #include "k3-am62l3.dtsi"
 #include "k3-pinctrl.h"
+#include "k3-wkup-src.h"
 
 / {
 	compatible = "ti,am62l3-evm", "ti,am62l3";
@@ -745,6 +746,9 @@
 	pinctrl-0 = <&uart0_pins_default>;
 	pinctrl-1 = <&uart0_pins_wakeup>;
 	pinctrl-names = "default", "wakeup";
+	interrupts-extended = <&gic500 GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>,
+			      <&ipc_irqchip TI_K3_WKUP_HWIRQ(AM62L_WKUP_SRC_MAIN_IO, 0x6d)>;
+	interrupt-names = "irq", "wakeup";
 	wakeup-source;
 	status = "okay";
 	bootph-all;
@@ -758,6 +762,10 @@
 &usb0 {
 	usb-role-switch;
 	bootph-all;
+	interrupts-extended = <&gic500 GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>, /* irq.0 */
+			      <&gic500 GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>, /* irq.0 */
+			      <&ipc_irqchip TI_K3_WKUP_HWIRQ(AM62L_WKUP_SRC_USB0, 0)>;
+	interrupt-names = "host", "peripheral", "wakeup";
 
 	port {
 		usb0_hs_ep: endpoint {
@@ -775,6 +783,10 @@
 	dr_mode = "host";
 	pinctrl-names = "default";
 	pinctrl-0 = <&usb1_default_pins>;
+	interrupts-extended = <&gic500 GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>, /* irq.0 */
+			      <&gic500 GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>, /* irq.0 */
+			      <&ipc_irqchip TI_K3_WKUP_HWIRQ(AM62L_WKUP_SRC_USB1, 0)>;
+	interrupt-names = "host", "peripheral", "wakeup";
 };
 
 &dss {
@@ -801,9 +813,18 @@
 	};
 };
 
+&wkup_rtc0 {
+	interrupts-extended = <&gic500 GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>,
+			      <&ipc_irqchip TI_K3_WKUP_HWIRQ(AM62L_WKUP_SRC_WKUP_RTC0, 0)>;
+	interrupt-names = "irq", "wakeup";
+};
+
 &wkup_uart0 {
 	pinctrl-0 = <&wkup_uart0_pins_default>;
 	pinctrl-names = "default";
+	interrupts-extended = <&gic500 GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>,
+			      <&ipc_irqchip TI_K3_WKUP_HWIRQ(AM62L_WKUP_SRC_WKUP_UART0, 0)>;
+	interrupt-names = "irq", "wakeup";
 };
 
 &wkup_uart0_interconnect {

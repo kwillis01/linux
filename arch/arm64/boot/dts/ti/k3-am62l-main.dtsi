@@ -985,4 +985,12 @@
 
 		status = "disabled";
 	};
+
+	ipc_irqchip: interrupt-controller@9080000 {
+		compatible = "ti,k3-ipc-irq";
+		reg = <0x0 0x9080000 0x0 0x200>;
+		interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-controller;
+		#interrupt-cells = <1>;
+	};
 };
